@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ThemeProvider } from "@/services/providers/theme-provider";
+import { ModeToggleButton } from "@/features/theme/components/mode-toggle-button";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -14,9 +17,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={"grid min-h-svh grid-rows-[auto_1fr_auto]"}>
-        <header>My header</header>
-        <main>{children}</main>
-        <footer>My footer</footer>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <header>
+            <h1>CritiQ</h1>
+            <ModeToggleButton />
+          </header>
+          <main>{children}</main>
+          <Toaster />
+          <footer>My footer</footer>
+        </ThemeProvider>
       </body>
     </html>
   );
