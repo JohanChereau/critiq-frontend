@@ -1,38 +1,117 @@
-import NextAuth from "next-auth";
+// src/app/api/auth/[...nextauth]/route.ts
+import type { User, Session as NextAuthSession, AuthOptions } from "next-auth";
+import type { JWT as NextAuthJWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { AuthenticationResponseSchema } from "@/lib/schemas/auth-reponse";
+import { CRITIQ_BACKEND_URL } from "@/lib/config";
+import NextAuth from "next-auth";
+import { parseExceptionResponse } from "@/lib/schemas/exception-response";
 
-const handler = NextAuth({
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
-      // The name to display on the sign in form (e.g. "Sign in with...")
-      name: "Credentials",
-      // `credentials` is used to generate a form on the sign in page.
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
-      // You can pass any HTML attribute to the <input> tag through the object.
+      name: "Email + Password",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "email@test.com" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, req) {
-        // Add logic here to look up the user from the credentials supplied
-        const user = { id: "1", name: "J Smith", email: "jsmith@example.com" };
-
-        if (user) {
-          // Any object returned will be saved in `user` property of the JWT
-          return user;
-        } else {
-          // If you return null then an error will be displayed advising the user to check their details.
-          return null;
-
-          // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials.password) {
+          throw new Error("Missing email or password");
         }
+
+        const res = await fetch(`${CRITIQ_BACKEND_URL}/auth/authenticate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+          }),
+        });
+
+        // parse the JSON payload
+        const payload = await res.json();
+        const parsed = AuthenticationResponseSchema.safeParse(payload);
+
+        // Handle any errors: HTTP status not OK or Zod parse failed
+        if (!res.ok || !parsed.success) {
+          let errMsg = "Authentication failed";
+
+          try {
+            const err = parseExceptionResponse(payload);
+            errMsg = err.message;
+          } catch {
+            // if parsing fails, fallback to Zod error or generic message
+            if (!parsed.success && parsed.error.errors.length) {
+              errMsg = parsed.error.errors[0].message;
+            }
+          }
+
+          throw new Error(errMsg);
+        }
+
+        // we now have a fully–typed AuthenticationResponse
+        const { user, token } = parsed.data;
+
+        // NextAuth.User.id must be a string, so coerce it
+        return {
+          id: user.id.toString(),
+          email: user.email,
+          name: user.fullName,
+          username: user.username,
+          fullName: user.fullName,
+          profilePictureUrl: user.profilePictureUrl,
+          dateOfBirth: user.dateOfBirth,
+          termsAccepted: user.termsAccepted,
+          termsAcceptedAt: user.termsAcceptedAt,
+          newsletterOptIn: user.newsletterOptIn,
+          newsletterOptInAt: user.newsletterOptInAt,
+          accountLocked: user.accountLocked,
+          enabled: user.enabled,
+          roles: user.roles,
+          token,
+        };
       },
     }),
   ],
-  pages: {
-    signIn: "auth/login",
-  },
-});
 
+  pages: {
+    signIn: "/auth/login",
+  },
+
+  callbacks: {
+    async jwt({
+      token,
+      user,
+    }: {
+      token: NextAuthJWT;
+      user?: User;
+    }): Promise<NextAuthJWT> {
+      if (user) {
+        token.accessToken = user.token;
+        token.user = user;
+      }
+      return token;
+    },
+    async session({
+      session,
+      token,
+    }: {
+      session: NextAuthSession;
+      token: NextAuthJWT;
+    }): Promise<NextAuthSession> {
+      session.accessToken = token.accessToken!;
+      session.user = token.user!;
+      return session;
+    },
+  },
+
+  session: {
+    strategy: "jwt",
+  },
+
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

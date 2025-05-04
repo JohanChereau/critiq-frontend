@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/services/providers/theme-provider";
-import { ModeToggleButton } from "@/features/theme/components/mode-toggle-button";
 import { Toaster } from "@/components/ui/sonner";
+import SessionProvider from "@/services/providers/session-provider";
+import Header from "@/components/layout/header";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -23,13 +24,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <header>
-            <h1>CritiQ</h1>
-            <ModeToggleButton />
-          </header>
-          <main>{children}</main>
-          <Toaster />
-          <footer>My footer</footer>
+          <SessionProvider>
+            <Header />
+            <main className="container mx-auto px-4">{children}</main>
+            <Toaster />
+            <footer>My footer</footer>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

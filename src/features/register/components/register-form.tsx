@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { createRegisterAction } from "../lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Link from "next/link";
 
 type FormValues = {
   firstname: string;
@@ -65,42 +66,41 @@ export default function RegisterForm() {
   };
 
   return (
-    <form
-      action={formAction}
-      className="mx-auto max-w-lg space-y-6 rounded-lg p-6 shadow"
-    >
-      {/* First Name */}
-      <div>
-        <Label htmlFor="firstname" className="pb-2">
-          First Name
-        </Label>
-        <Input
-          id="firstname"
-          name="firstname"
-          value={values.firstname}
-          onChange={handleChange}
-          placeholder="John"
-        />
-        {errors.firstname && (
-          <p className="mt-1 text-sm text-red-600">{errors.firstname}</p>
-        )}
-      </div>
+    <form action={formAction} className="w-full max-w-[800px] space-y-8">
+      <div className="grid-cols-2 gap-4 space-y-8 md:grid md:space-y-0">
+        {/* First Name */}
+        <div>
+          <Label htmlFor="firstname" className="pb-2">
+            First Name
+          </Label>
+          <Input
+            id="firstname"
+            name="firstname"
+            value={values.firstname}
+            onChange={handleChange}
+            placeholder="John"
+          />
+          {errors.firstname && (
+            <p className="mt-1 text-sm text-red-600">{errors.firstname}</p>
+          )}
+        </div>
 
-      {/* Last Name */}
-      <div>
-        <Label htmlFor="lastname" className="pb-2">
-          Last Name
-        </Label>
-        <Input
-          id="lastname"
-          name="lastname"
-          value={values.lastname}
-          onChange={handleChange}
-          placeholder="Doe"
-        />
-        {errors.lastname && (
-          <p className="mt-1 text-sm text-red-600">{errors.lastname}</p>
-        )}
+        {/* Last Name */}
+        <div>
+          <Label htmlFor="lastname" className="pb-2">
+            Last Name
+          </Label>
+          <Input
+            id="lastname"
+            name="lastname"
+            value={values.lastname}
+            onChange={handleChange}
+            placeholder="Doe"
+          />
+          {errors.lastname && (
+            <p className="mt-1 text-sm text-red-600">{errors.lastname}</p>
+          )}
+        </div>
       </div>
 
       {/* Username */}
@@ -113,7 +113,7 @@ export default function RegisterForm() {
           name="username"
           value={values.username}
           onChange={handleChange}
-          placeholder="johndoe"
+          placeholder="@johndoe"
         />
         <p className="text-xs text-gray-500">
           This is your public display name.
@@ -237,6 +237,17 @@ export default function RegisterForm() {
       <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Submitting…" : "Register"}
       </Button>
+
+      <p className="flex items-center justify-center">
+        {"Already have an account? "}
+        <Button
+          variant={"link"}
+          className="text-foreground p-2 text-base underline"
+          asChild
+        >
+          <Link href={"/auth/login"}>{"Sign in "}</Link>
+        </Button>
+      </p>
 
       {/* Success */}
       {state.success && (
