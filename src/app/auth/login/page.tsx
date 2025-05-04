@@ -1,19 +1,19 @@
 import BackgroundMesh from "@/components/ui/background-mesh";
-import RegisterForm from "@/features/register/components/register-form";
+import LoginForm from "@/features/login/components/login-form";
 
-const Register = () => {
+const Login = () => {
   return (
     <section className="grid h-full w-full grid-flow-row place-items-center gap-16 py-40">
       <div className="relative text-center">
         <BackgroundMesh />
-        <h1 className="text-3xl font-bold md:text-6xl">Sign Up</h1>
+        <h1 className="text-3xl font-bold md:text-6xl">Sign In</h1>
         <p className="text-muted-foreground mt-4 md:text-xl">
-          Enter your information to create an account.
+          Enter your email below to login to your account.
         </p>
       </div>
-      <RegisterForm />
+      <LoginForm />
     </section>
   );
 };
 
-export default Register;
+export default Login;

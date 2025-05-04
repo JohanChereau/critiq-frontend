@@ -34,12 +34,7 @@ export function ActivateAccountForm() {
   }, [state, router]);
 
   return (
-    <form
-      action={formAction}
-      className="mx-auto max-w-md space-y-6 rounded-lg p-6 shadow"
-    >
-      <h2 className="text-xl font-semibold">Activate your account</h2>
-
+    <form action={formAction} className="w-full max-w-[800px] space-y-8">
       <div>
         <Label htmlFor="code" className="pb-2">
           6-digit code
